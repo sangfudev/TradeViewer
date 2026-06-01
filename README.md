@@ -6,6 +6,35 @@ A full-stack trade history viewer and risk/reward calculator.
 
 ---
 
+## Running with Docker
+
+The easiest way to run the full stack.
+
+**Prerequisite:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+```bash
+docker compose up --build
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| API / Swagger | http://localhost:5000/swagger |
+
+The SQLite database is stored in a named Docker volume (`tradeviewer_sqlite_data`) and persists across restarts.
+
+To stop and remove containers (data is preserved):
+```bash
+docker compose down
+```
+
+To also delete the database volume:
+```bash
+docker compose down -v
+```
+
+---
+
 ## Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
