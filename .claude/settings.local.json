@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet run *)",
+      "Bash(kill %1)",
+      "Bash(sqlite3 tradeviewer.db \".tables\")",
+      "Bash(sqlite3 tradeviewer.db \"SELECT MigrationId FROM __EFMigrationsHistory;\")",
+      "Bash(dotnet build *)",
+      "Bash(dotnet ef *)",
+      "Bash(sqlite3 \"d:/TradeViewer/src/TradeViewer.API/tradeviewer.db\" \".tables\")",
+      "Bash(sqlite3 \"d:/TradeViewer/src/TradeViewer.API/tradeviewer.db\" \"SELECT MigrationId FROM __EFMigrationsHistory;\")"
+    ]
+  }
+}
