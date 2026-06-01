@@ -1,0 +1,40 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+*.DotSettings.user
+
+# EF Core SQLite DB
+*.db
+*.db-shm
+*.db-wal
+
+# Publish output
+publish/
+out/
+
+# NuGet
+*.nupkg
+packages/
+
+# Node / frontend
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# Vite cache
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
