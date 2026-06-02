@@ -1,6 +1,6 @@
 # TradeViewer
 
-A full-stack trade history viewer and risk/reward calculator.
+A full-stack trade history viewer and risk/reward calculator. Mainly for imported trade reports from Interactive Brokers accounts.
 
 **Stack:** .NET 8 (Clean Architecture) · SQLite · React 18 + Vite · Recharts
 
