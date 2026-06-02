@@ -11,3 +11,6 @@ export const importFile = (file) => {
   return api.post('/trades/import', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
 }
 export const calculateRiskReward = (body) => api.post('/riskreward/calculate', body).then(r => r.data)
+
+export const getChart = (symbol, from, to) =>
+  api.get('/chart', { params: { symbol, from, to } }).then(r => r.data)

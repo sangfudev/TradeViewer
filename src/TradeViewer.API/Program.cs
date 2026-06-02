@@ -24,6 +24,12 @@ builder.Services.AddScoped<ITradeFileParser, CsvTradeParser>();
 builder.Services.AddScoped<ITradeFileParser, XmlTradeParser>();
 builder.Services.AddScoped<TradeService>();
 builder.Services.AddScoped<RiskRewardService>();
+builder.Services.AddHttpClient<ChartService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 // CORS – allow React dev server
 builder.Services.AddCors(options =>
