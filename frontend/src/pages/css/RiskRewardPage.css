@@ -1,0 +1,245 @@
+.rr-page {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.rr-page h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.rr-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+/* .card handles background/border/border-radius/padding for .rr-inputs, .rr-panel */
+
+.rr-inputs {
+  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.rr-calculate-btn {
+  padding: 12px 28px;
+  font-size: 15px;
+  height: fit-content;
+  align-self: end;
+}
+
+.rr-error {
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--red);
+  color: var(--red);
+  margin-bottom: 20px;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+.rr-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--surface2);
+  padding: 4px;
+  border-radius: var(--radius);
+  width: fit-content;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  border-radius: 7px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.tab-btn--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Panel shared ─────────────────────────────────────────────────────────── */
+
+.rr-panel h2 {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.rr-panel-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.rr-panel-desc strong { color: var(--text); }
+
+.rr-panel-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* ── Heat map ─────────────────────────────────────────────────────────────── */
+
+.heatmap-header {
+  margin-bottom: 16px;
+}
+
+.heatmap-wrap {
+  overflow-x: auto;
+}
+
+.heatmap-table {
+  border-collapse: separate;
+  border-spacing: 3px;
+  min-width: 600px;
+}
+
+.heatmap-table th {
+  padding: 8px 14px;
+  text-align: left;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.heatmap-wr-header {
+  padding: 8px 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.heatmap-rr-label {
+  padding: 6px 14px;
+  font-weight: 700;
+  color: var(--accent-light);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.heatmap-cell {
+  border-radius: 6px;
+  padding: 8px 10px;
+  text-align: center;
+  cursor: default;
+  transition: transform 0.1s;
+  min-width: 90px;
+}
+
+.heatmap-cell-value {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.heatmap-cell-pct {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.heatmap-legend {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.heatmap-legend-label {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.heatmap-legend-scale {
+  height: 14px;
+  width: 200px;
+  border-radius: 4px;
+  background: linear-gradient(to right, rgb(210, 30, 30), rgb(30, 30, 30), rgb(20, 190, 20));
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+
+.rr-empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 60px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.rr-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.rr-empty-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: var(--text);
+}
+
+/* ── Field component ──────────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-subtle);
+  margin-top: -4px;
+}
+
+.field-input-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.field-prefix {
+  padding: 10px 12px;
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+.field-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.field-suffix {
+  padding: 10px 12px;
+  color: var(--text-muted);
+}

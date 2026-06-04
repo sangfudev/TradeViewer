@@ -1,0 +1,56 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 24px;
+}
+
+.app-brand {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.app-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-muted);
+  background: transparent;
+  transition: all 0.15s;
+}
+
+.nav-link--active {
+  color: #fff;
+  background: var(--accent);
+}
+
+.app-main {
+  flex: 1;
+  padding: 28px 24px;
+}

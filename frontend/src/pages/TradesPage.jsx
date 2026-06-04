@@ -4,6 +4,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Customized,
 } from 'recharts'
 import { getYears, getPositionsByYear, getChart } from '../api/client'
+import './css/TradesPage.css'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -17,7 +18,7 @@ const fmtDate = (d) => d
 
 const isoDate = (d) => d ? new Date(d).toISOString().split('T')[0] : null
 
-const pnlColor = (v) => v == null ? '#8892a4' : v > 0 ? '#22c55e' : v < 0 ? '#ef4444' : '#8892a4'
+const pnlColor = (v) => v == null ? 'var(--text-muted)' : v > 0 ? 'var(--green)' : v < 0 ? 'var(--red)' : 'var(--text-muted)'
 const fmtPnl   = (v) => v == null ? '—' : `${v > 0 ? '+' : ''}$${fmt(v)}`
 
 // ── indicator math ────────────────────────────────────────────────────────────
@@ -49,9 +50,9 @@ function CandlestickRenderer({ xAxisMap, yAxisMap, chartData, entryDate, exitDat
   const bw    = typeof xAxis.scale.bandwidth === 'function' ? xAxis.scale.bandwidth() : 8
   const toY   = (p) => yAxis.scale(p)
   const bodyW = Math.max(2, bw * 0.65)
-  const aw    = Math.max(8, bw * 0.8)   // arrow width
-  const ah    = 9                         // arrow head height
-  const gap   = 4                         // pixels between arrow tip and candle high
+  const aw    = Math.max(8, bw * 0.8)
+  const ah    = 9
+  const gap   = 4
 
   return (
     <g>
@@ -72,7 +73,6 @@ function CandlestickRenderer({ xAxisMap, yAxisMap, chartData, entryDate, exitDat
 
         const isEntry = c.date === entryDate
         const isExit  = c.date === exitDate
-        // tip of downward arrow sits `gap` px above the wick top
         const arrowTipY  = highY - gap
         const arrowBaseY = arrowTipY - ah
 
@@ -84,41 +84,22 @@ function CandlestickRenderer({ xAxisMap, yAxisMap, chartData, entryDate, exitDat
 
             {isEntry && !isExit && (
               <g>
-                <polygon
-                  points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`}
-                  fill="#22c55e"
-                />
-                <text x={cx} y={arrowBaseY - 3} textAnchor="middle"
-                  fill="#22c55e" fontSize={9} fontWeight="700">B</text>
+                <polygon points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`} fill="#22c55e" />
+                <text x={cx} y={arrowBaseY - 3} textAnchor="middle" fill="#22c55e" fontSize={9} fontWeight="700">B</text>
               </g>
             )}
             {isEntry && isExit && (
-              // Same-day trade: buy arrow below the low, sell arrow above the high
               <g>
-                {/* Sell — above */}
-                <polygon
-                  points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`}
-                  fill="#ef4444"
-                />
-                <text x={cx} y={arrowBaseY - 3} textAnchor="middle"
-                  fill="#ef4444" fontSize={9} fontWeight="700">S</text>
-                {/* Buy — below (upward-pointing arrow) */}
-                <polygon
-                  points={`${cx - aw / 2},${lowY + gap} ${cx + aw / 2},${lowY + gap} ${cx},${lowY + gap + ah}`}
-                  fill="#22c55e"
-                />
-                <text x={cx} y={lowY + gap + ah + 10} textAnchor="middle"
-                  fill="#22c55e" fontSize={9} fontWeight="700">B</text>
+                <polygon points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`} fill="#ef4444" />
+                <text x={cx} y={arrowBaseY - 3} textAnchor="middle" fill="#ef4444" fontSize={9} fontWeight="700">S</text>
+                <polygon points={`${cx - aw / 2},${lowY + gap} ${cx + aw / 2},${lowY + gap} ${cx},${lowY + gap + ah}`} fill="#22c55e" />
+                <text x={cx} y={lowY + gap + ah + 10} textAnchor="middle" fill="#22c55e" fontSize={9} fontWeight="700">B</text>
               </g>
             )}
             {isExit && !isEntry && (
               <g>
-                <polygon
-                  points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`}
-                  fill="#ef4444"
-                />
-                <text x={cx} y={arrowBaseY - 3} textAnchor="middle"
-                  fill="#ef4444" fontSize={9} fontWeight="700">S</text>
+                <polygon points={`${cx - aw / 2},${arrowBaseY} ${cx + aw / 2},${arrowBaseY} ${cx},${arrowTipY}`} fill="#ef4444" />
+                <text x={cx} y={arrowBaseY - 3} textAnchor="middle" fill="#ef4444" fontSize={9} fontWeight="700">S</text>
               </g>
             )}
           </g>
@@ -144,22 +125,19 @@ function ChartTooltip({ active, payload, label }) {
   const bull = d.close >= d.open
 
   return (
-    <div style={{
-      background: '#22263a', border: '1px solid #2e3248', borderRadius: '8px',
-      padding: '10px 14px', fontSize: '12px', minWidth: '150px',
-    }}>
-      <p style={{ color: '#e2e8f0', fontWeight: 600, margin: '0 0 6px' }}>
+    <div className="chart-tooltip">
+      <p className="chart-tooltip-date">
         {new Date(label + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px' }}>
-        <span style={{ color: '#8892a4' }}>O</span><span style={{ color: '#e2e8f0' }}>${fmt(d.open)}</span>
-        <span style={{ color: '#8892a4' }}>H</span><span style={{ color: '#22c55e' }}>${fmt(d.high)}</span>
-        <span style={{ color: '#8892a4' }}>L</span><span style={{ color: '#ef4444' }}>${fmt(d.low)}</span>
-        <span style={{ color: '#8892a4' }}>C</span>
-        <span style={{ color: bull ? '#22c55e' : '#ef4444', fontWeight: 700 }}>${fmt(d.close)}</span>
+      <div className="chart-tooltip-grid">
+        <span className="chart-tooltip-key">O</span><span className="chart-tooltip-val">${fmt(d.open)}</span>
+        <span className="chart-tooltip-key">H</span><span className="chart-tooltip-high">${fmt(d.high)}</span>
+        <span className="chart-tooltip-key">L</span><span className="chart-tooltip-low">${fmt(d.low)}</span>
+        <span className="chart-tooltip-key">C</span>
+        <span className="chart-tooltip-close" style={{ color: bull ? 'var(--green)' : 'var(--red)' }}>${fmt(d.close)}</span>
         {MA_SERIES.map(m => d[m.key] != null && (
           <>
-            <span key={m.key + 'l'} style={{ color: '#8892a4' }}>{m.label}</span>
+            <span key={m.key + 'l'} className="chart-tooltip-key">{m.label}</span>
             <span key={m.key + 'v'} style={{ color: m.color }}>${fmt(d[m.key])}</span>
           </>
         ))}
@@ -170,11 +148,11 @@ function ChartTooltip({ active, payload, label }) {
 
 // ── chart modal ───────────────────────────────────────────────────────────────
 
-function Stat({ label, value, color = '#e2e8f0' }) {
+function Stat({ label, value, color = 'var(--text)' }) {
   return (
-    <div style={{ textAlign: 'right' }}>
-      <p style={{ color: '#8892a4', fontSize: '11px', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-      <p style={{ color, fontWeight: 700, fontSize: '15px', margin: '2px 0 0' }}>{value}</p>
+    <div className="stat-group">
+      <p className="stat-group-label">{label}</p>
+      <p className="stat-group-value" style={{ color }}>{value}</p>
     </div>
   )
 }
@@ -241,85 +219,56 @@ function ChartModal({ position, onClose }) {
   const hasChart = !chartLoading && !chartError && chartData.length > 0
 
   return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: '#1a1d27', border: '1px solid #2e3248', borderRadius: '16px',
-        width: '100%', maxWidth: '960px', padding: '24px',
-        boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
-      }}>
-        {/* Header row */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px' }}>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="chart-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
           <div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>{position.symbol}</h2>
+            <div className="symbol-row">
+              <h2 className="symbol-title">{position.symbol}</h2>
               {position.currency && position.currency !== 'USD' &&
-                <span style={{ fontSize: '12px', color: '#8892a4' }}>{position.currency}</span>}
-              <span style={{
-                padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600,
-                background: position.isClosed ? 'rgba(99,102,241,0.15)' : 'rgba(245,158,11,0.15)',
-                color:      position.isClosed ? '#a5b4fc' : '#f59e0b',
-              }}>{position.isClosed ? 'Closed' : 'Open'}</span>
+                <span className="symbol-currency">{position.currency}</span>}
+              <span className={`badge badge--${position.isClosed ? 'closed' : 'open'}`}>
+                {position.isClosed ? 'Closed' : 'Open'}
+              </span>
             </div>
-            <p style={{ color: '#8892a4', fontSize: '13px', margin: '4px 0 0' }}>
+            <p className="symbol-meta">
               {position.description ? position.description + ' · ' : ''}
               {fmtDate(position.openDate)}{position.isClosed ? ` → ${fmtDate(position.closeDate)}` : ' → present'}
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+          <div className="modal-right">
             <Stat label="Entry" value={position.avgEntryPrice ? `$${fmt(position.avgEntryPrice)}` : '—'} />
             {position.isClosed && <Stat label="Exit" value={position.avgExitPrice != null ? `$${fmt(position.avgExitPrice)}` : '—'} />}
             {position.isClosed && <Stat label="P&L" value={fmtPnl(position.pnL)} color={pnlColor(position.pnL)} />}
-            {/* Period toggle */}
-            <div style={{ display: 'flex', border: '1px solid #2e3248', borderRadius: '8px', overflow: 'hidden', alignSelf: 'center' }}>
+            <div className="period-toggle">
               {[['trade', 'Trade'], ['year', `${new Date(position.openDate).getFullYear()}`]].map(([v, label]) => (
-                <button key={v} onClick={() => setView(v)} style={{
-                  padding: '5px 12px', border: 'none', cursor: 'pointer',
-                  fontSize: '12px', fontWeight: 600,
-                  background: view === v ? '#6366f1' : 'transparent',
-                  color:      view === v ? '#fff'    : '#8892a4',
-                  transition: 'all 0.15s',
-                }}>{label}</button>
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`period-btn${view === v ? ' period-btn--active' : ''}`}
+                >{label}</button>
               ))}
             </div>
-            <button onClick={onClose} style={{
-              background: 'none', border: '1px solid #2e3248', borderRadius: '8px',
-              color: '#8892a4', fontSize: '18px', cursor: 'pointer',
-              width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>×</button>
+            <button className="modal-close-btn" onClick={onClose}>×</button>
           </div>
         </div>
 
-        {/* MA legend */}
         {hasChart && (
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          <div className="ma-legend">
             {MA_SERIES.map(m => (
-              <div key={m.key} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <div style={{ width: 20, height: 2, background: m.color, borderRadius: 1 }} />
-                <span style={{ fontSize: '11px', color: m.color }}>{m.label}</span>
+              <div key={m.key} className="ma-legend-item">
+                <div className="ma-legend-line" style={{ background: m.color }} />
+                <span style={{ color: m.color }}>{m.label}</span>
               </div>
             ))}
           </div>
         )}
 
-        {/* Chart */}
-        <div style={{ height: '390px' }}>
-          {chartLoading && (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8892a4' }}>
-              Loading price data…
-            </div>
-          )}
-          {chartError && (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444' }}>
-              {chartError}
-            </div>
-          )}
+        <div className="chart-area">
+          {chartLoading && <div className="chart-empty-state chart-empty-state--muted">Loading price data…</div>}
+          {chartError && <div className="chart-empty-state chart-empty-state--error">{chartError}</div>}
           {!chartLoading && !chartError && chartData.length === 0 && (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8892a4' }}>
-              No price data available for this symbol.
-            </div>
+            <div className="chart-empty-state chart-empty-state--muted">No price data available for this symbol.</div>
           )}
           {hasChart && (
             <ResponsiveContainer width="100%" height="100%">
@@ -346,16 +295,10 @@ function ChartModal({ position, onClose }) {
                   content={<ChartTooltip />}
                   cursor={{ stroke: '#3e4466', strokeWidth: 1, strokeDasharray: '4 2' }}
                 />
-
-                {/* Invisible line — keeps recharts tooltip active over the chart area */}
                 <Line dataKey="close" stroke="transparent" strokeWidth={0}
                   dot={false} activeDot={false} isAnimationActive={false} legendType="none" />
-
-                {/* Candlestick bodies + wicks, with B/S arrows at entry/exit candles */}
                 <Customized component={CandlestickRenderer}
                   chartData={chartData} entryDate={entryDate} exitDate={exitDate} />
-
-                {/* Moving averages */}
                 {MA_SERIES.map(m => (
                   <Line key={m.key} dataKey={m.key} type="monotone"
                     stroke={m.color} strokeWidth={1.5}
@@ -363,15 +306,11 @@ function ChartModal({ position, onClose }) {
                     isAnimationActive={false} legendType="none"
                   />
                 ))}
-
-                {/* Entry price — green dashed */}
                 {position.avgEntryPrice > 0 && (
                   <ReferenceLine y={Number(position.avgEntryPrice)}
                     stroke="#22c55e" strokeDasharray="5 4" strokeWidth={1.5}
                     label={{ value: `Entry $${fmt(position.avgEntryPrice)}`, position: 'insideTopRight', fill: '#22c55e', fontSize: 11 }} />
                 )}
-
-                {/* Exit price — red dashed */}
                 {position.isClosed && position.avgExitPrice != null && (
                   <ReferenceLine y={Number(position.avgExitPrice)}
                     stroke="#ef4444" strokeDasharray="5 4" strokeWidth={1.5}
@@ -382,9 +321,7 @@ function ChartModal({ position, onClose }) {
           )}
         </div>
 
-        <p style={{ color: '#4a5268', fontSize: '11px', marginTop: '10px', textAlign: 'right' }}>
-          Price data via Yahoo Finance · click outside or Esc to close
-        </p>
+        <p className="chart-footer">Price data via Yahoo Finance · click outside or Esc to close</p>
       </div>
     </div>
   )
@@ -485,55 +422,44 @@ export default function TradesPage() {
 
   const SortIcon = ({ col }) =>
     sortKey !== col
-      ? <span style={{ color: '#2e3248', marginLeft: 4 }}>↕</span>
-      : <span style={{ color: '#6366f1', marginLeft: 4 }}>{sortDir === 'asc' ? '↑' : '↓'}</span>
-
-  const filterBtn = (value, label) => (
-    <button onClick={() => setFilter(value)} style={{
-      padding: '6px 14px', borderRadius: '8px', border: 'none',
-      fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-      background: filter === value ? '#6366f1' : '#22263a',
-      color:      filter === value ? '#fff'    : '#8892a4',
-      transition: 'all 0.15s',
-    }}>{label}</button>
-  )
+      ? <span className="sort-icon">↕</span>
+      : <span className="sort-icon sort-icon--active">{sortDir === 'asc' ? '↑' : '↓'}</span>
 
   return (
     <div>
       {selected && <ChartModal position={selected} onClose={closeModal} />}
 
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="trades-header">
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, marginBottom: '4px' }}>Trade History</h1>
-          <p style={{ color: '#8892a4' }}>One row per completed position — click any row to view the price chart</p>
+          <h1 className="trades-page-title">Trade History</h1>
+          <p className="trades-page-subtitle">One row per completed position — click any row to view the price chart</p>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {years.length === 0 && <span style={{ color: '#8892a4', padding: '8px 0' }}>No data — import a file to get started</span>}
+        <div className="trades-year-btns">
+          {years.length === 0 && <span className="no-data-hint">No data — import a file to get started</span>}
           {years.map(y => (
-            <button key={y} onClick={() => setYear(y)} style={{
-              padding: '8px 18px', borderRadius: '8px', border: 'none',
-              fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'all 0.15s',
-              background: year === y ? '#6366f1' : '#22263a',
-              color:      year === y ? '#fff'    : '#8892a4',
-            }}>{y}</button>
+            <button
+              key={y}
+              onClick={() => setYear(y)}
+              className={`btn btn-secondary year-btn${year === y ? ' year-btn--active' : ''}`}
+            >{y}</button>
           ))}
         </div>
       </div>
 
       {closed.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+        <div className="stats-grid">
           {[
-            { label: 'Closed Trades',   value: closed.length,            color: '#e2e8f0' },
-            { label: 'Winners',         value: winCount,                 color: '#22c55e' },
-            { label: 'Losers',          value: lossCount,                color: '#ef4444' },
-            { label: 'Win Rate',        value: `${winRate.toFixed(1)}%`, color: winRate >= 50 ? '#22c55e' : '#f59e0b' },
+            { label: 'Closed Trades',   value: closed.length,            color: 'var(--text)' },
+            { label: 'Winners',         value: winCount,                 color: 'var(--green)' },
+            { label: 'Losers',          value: lossCount,                color: 'var(--red)' },
+            { label: 'Win Rate',        value: `${winRate.toFixed(1)}%`, color: winRate >= 50 ? 'var(--green)' : 'var(--yellow)' },
             { label: 'Total P&L',       value: fmtPnl(totalPnL),        color: pnlColor(totalPnL) },
-            { label: 'Avg Hold (Win)',  value: avgDays(winners) != null ? `${avgDays(winners)}d` : '—', color: '#22c55e' },
-            { label: 'Avg Hold (Loss)', value: avgDays(losers)  != null ? `${avgDays(losers)}d`  : '—', color: '#ef4444' },
+            { label: 'Avg Hold (Win)',  value: avgDays(winners) != null ? `${avgDays(winners)}d` : '—', color: 'var(--green)' },
+            { label: 'Avg Hold (Loss)', value: avgDays(losers)  != null ? `${avgDays(losers)}d`  : '—', color: 'var(--red)' },
           ].map(s => (
-            <div key={s.label} style={{ background: '#1a1d27', border: '1px solid #2e3248', borderRadius: '10px', padding: '16px' }}>
-              <p style={{ color: '#8892a4', fontSize: '12px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
-              <p style={{ fontWeight: 700, fontSize: '20px', color: s.color }}>{s.value}</p>
+            <div key={s.label} className="stat-card">
+              <p className="stat-label">{s.label}</p>
+              <p className="stat-value" style={{ color: s.color }}>{s.value}</p>
             </div>
           ))}
         </div>
@@ -541,108 +467,88 @@ export default function TradesPage() {
 
       {year && (
         <>
-          <div style={{ marginBottom: '12px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="trades-toolbar">
             <input
-              value={search} onChange={e => setSearch(e.target.value)}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
               placeholder="Filter by symbol or description…"
-              style={{
-                background: '#1a1d27', border: '1px solid #2e3248', borderRadius: '8px',
-                padding: '8px 14px', color: '#e2e8f0', fontSize: '14px', outline: 'none', width: '260px',
-              }}
+              className="search-input"
             />
             {search && (
-              <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', color: '#8892a4', fontSize: '14px', cursor: 'pointer' }}>
-                ✕ Clear
-              </button>
+              <button onClick={() => setSearch('')} className="clear-btn">✕ Clear</button>
             )}
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {filterBtn('all', 'All')}
-              {filterBtn('closed', 'Closed')}
-              {filterBtn('open', 'Open')}
+            <div className="filter-group">
+              {['all', 'closed', 'open'].map(v => (
+                <button
+                  key={v}
+                  onClick={() => setFilter(v)}
+                  className={`btn btn-secondary filter-btn${filter === v ? ' filter-btn--active' : ''}`}
+                >{v.charAt(0).toUpperCase() + v.slice(1)}</button>
+              ))}
             </div>
-            <span style={{ marginLeft: 'auto', color: '#8892a4', fontSize: '13px' }}>
+            <span className="result-count">
               {filtered.length} position{filtered.length !== 1 ? 's' : ''}
             </span>
           </div>
 
-          <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid #2e3248' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="table-wrap">
+            <table className="trades-table">
               <thead>
-                <tr style={{ background: '#22263a' }}>
+                <tr>
                   {cols.map(c => (
-                    <th key={c.key} onClick={() => handleSort(c.key)} style={{
-                      padding: '12px 16px',
-                      textAlign: RIGHT_COLS.has(c.key) ? 'right' : 'left',
-                      fontWeight: 600, fontSize: '12px', cursor: 'pointer', userSelect: 'none',
-                      color: sortKey === c.key ? '#a5b4fc' : '#8892a4',
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                      whiteSpace: 'nowrap', borderBottom: '1px solid #2e3248',
-                    }}>
+                    <th
+                      key={c.key}
+                      onClick={() => handleSort(c.key)}
+                      className={[
+                        RIGHT_COLS.has(c.key) ? 'th-right' : '',
+                        sortKey === c.key ? 'th-sort-active' : '',
+                      ].filter(Boolean).join(' ') || undefined}
+                    >
                       {c.label}<SortIcon col={c.key} />
                     </th>
                   ))}
-                  <th style={{
-                    padding: '12px 16px', textAlign: 'center', fontWeight: 600, fontSize: '12px',
-                    color: '#8892a4', textTransform: 'uppercase', letterSpacing: '0.05em',
-                    whiteSpace: 'nowrap', borderBottom: '1px solid #2e3248',
-                  }}>Status</th>
+                  <th className="th-center">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
-                  <tr><td colSpan={10} style={{ padding: '40px', textAlign: 'center', color: '#8892a4' }}>Loading…</td></tr>
+                  <tr className="trades-table-empty"><td colSpan={11}>Loading…</td></tr>
                 )}
                 {!loading && filtered.length === 0 && (
-                  <tr><td colSpan={10} style={{ padding: '40px', textAlign: 'center', color: '#8892a4' }}>
-                    {positions.length === 0 ? `No positions for ${year}` : 'No matches'}
-                  </td></tr>
+                  <tr className="trades-table-empty">
+                    <td colSpan={11}>{positions.length === 0 ? `No positions for ${year}` : 'No matches'}</td>
+                  </tr>
                 )}
                 {!loading && filtered.map((p, i) => (
-                  <tr key={`${p.symbol}-${p.openDate}-${i}`}
-                    onClick={() => setSelected(p)}
-                    style={{ background: i % 2 === 0 ? '#1a1d27' : '#1c2030', cursor: 'pointer', transition: 'background 0.1s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#252942'}
-                    onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? '#1a1d27' : '#1c2030'}
-                  >
-                    <td style={{ padding: '12px 16px', color: '#8892a4', whiteSpace: 'nowrap' }}>{fmtDate(p.openDate)}</td>
-                    <td style={{ padding: '12px 16px', color: '#8892a4', whiteSpace: 'nowrap' }}>{p.isClosed ? fmtDate(p.closeDate) : '—'}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 600 }}>
+                  <tr key={`${p.symbol}-${p.openDate}-${i}`} onClick={() => setSelected(p)}>
+                    <td className="td-muted td-nowrap">{fmtDate(p.openDate)}</td>
+                    <td className="td-muted td-nowrap">{p.isClosed ? fmtDate(p.closeDate) : '—'}</td>
+                    <td className="td-bold">
                       {p.symbol}
                       {p.currency && p.currency !== 'USD' &&
-                        <span style={{ marginLeft: 6, fontSize: '11px', color: '#8892a4', fontWeight: 400 }}>{p.currency}</span>}
+                        <span className="td-currency-tag">{p.currency}</span>}
                     </td>
-                    <td style={{ padding: '12px 16px', color: '#8892a4' }}>{p.description || '—'}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmt(p.quantity)}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right' }}>{p.avgEntryPrice > 0 ? fmt(p.avgEntryPrice) : '—'}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', color: '#8892a4' }}>{p.avgExitPrice != null ? fmt(p.avgExitPrice) : '—'}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', color: '#ef4444' }}>{p.totalCommission > 0 ? `-$${fmt(p.totalCommission)}` : '—'}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: pnlColor(p.pnL) }}>{fmtPnl(p.pnL)}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: pnlColor(gainPct(p)) }}>{fmtPct(gainPct(p))}</td>
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      <span style={{
-                        display: 'inline-block', padding: '2px 10px', borderRadius: '20px',
-                        fontSize: '11px', fontWeight: 600,
-                        background: p.isClosed ? 'rgba(99,102,241,0.15)' : 'rgba(245,158,11,0.15)',
-                        color:      p.isClosed ? '#a5b4fc' : '#f59e0b',
-                      }}>{p.isClosed ? 'Closed' : 'Open'}</span>
+                    <td className="td-muted">{p.description || '—'}</td>
+                    <td className="td-right">{fmt(p.quantity)}</td>
+                    <td className="td-right">{p.avgEntryPrice > 0 ? fmt(p.avgEntryPrice) : '—'}</td>
+                    <td className="td-right td-muted">{p.avgExitPrice != null ? fmt(p.avgExitPrice) : '—'}</td>
+                    <td className="td-commission">{p.totalCommission > 0 ? `-$${fmt(p.totalCommission)}` : '—'}</td>
+                    <td className="td-right td-bold" style={{ color: pnlColor(p.pnL) }}>{fmtPnl(p.pnL)}</td>
+                    <td className="td-right td-bold" style={{ color: pnlColor(gainPct(p)) }}>{fmtPct(gainPct(p))}</td>
+                    <td className="td-center">
+                      <span className={`badge badge--${p.isClosed ? 'closed' : 'open'}`}>
+                        {p.isClosed ? 'Closed' : 'Open'}
+                      </span>
                     </td>
                   </tr>
                 ))}
                 {!loading && filtered.length > 0 && (
-                  <tr style={{ background: '#22263a', borderTop: '2px solid #2e3248' }}>
-                    <td colSpan={7} style={{
-                      padding: '12px 16px', textAlign: 'right',
-                      fontWeight: 600, fontSize: '12px', color: '#8892a4',
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                    }}>
+                  <tr className="totals-row">
+                    <td colSpan={7} className="totals-label">
                       Totals ({closed.length} closed{positions.length - closed.length > 0 ? `, ${positions.length - closed.length} open` : ''})
                     </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, fontSize: '14px', color: '#ef4444' }}>
-                      {totalComm > 0 ? `-$${fmt(totalComm)}` : '—'}
-                    </td>
-                    <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, fontSize: '15px', color: pnlColor(totalPnL) }}>
-                      {fmtPnl(totalPnL)}
-                    </td>
+                    <td className="totals-commission">{totalComm > 0 ? `-$${fmt(totalComm)}` : '—'}</td>
+                    <td className="totals-pnl" style={{ color: pnlColor(totalPnL) }}>{fmtPnl(totalPnL)}</td>
                     <td /><td />
                   </tr>
                 )}
