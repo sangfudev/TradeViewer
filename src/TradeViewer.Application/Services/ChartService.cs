@@ -63,6 +63,28 @@ public class ChartService(HttpClient httpClient)
         return candles;
     }
 
+    public async Task<string?> GetIndustryAsync(string symbol)
+    {
+        var url = $"https://stockanalysis.com/stocks/{Uri.EscapeDataString(symbol.ToLowerInvariant())}/";
+        try
+        {
+            using var response = await httpClient.GetAsync(url);
+            if (!response.IsSuccessStatusCode) return null;
+
+            var html = await response.Content.ReadAsStringAsync();
+            var match = System.Text.RegularExpressions.Regex.Match(
+                html, @"Industry</span>\s*<!--\[--><a[^>]*>([^<]+)</a>");
+            if (!match.Success) return null;
+
+            var value = match.Groups[1].Value.Trim();
+            return string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static decimal GetDecimal(List<JsonElement> arr, int i)
         => i < arr.Count && arr[i].ValueKind != JsonValueKind.Null
             ? (decimal)arr[i].GetDouble() : 0m;

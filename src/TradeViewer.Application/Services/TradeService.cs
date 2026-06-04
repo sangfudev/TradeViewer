@@ -4,7 +4,7 @@ using TradeViewer.Domain.Entities;
 
 namespace TradeViewer.Application.Services;
 
-public class TradeService(ITradeRepository repository, IEnumerable<ITradeFileParser> parsers)
+public class TradeService(ITradeRepository repository, IEnumerable<ITradeFileParser> parsers, ChartService chartService)
 {
     public async Task<IEnumerable<TradeDto>> GetTradesByYearAsync(int year)
     {
@@ -113,6 +113,7 @@ public class TradeService(ITradeRepository repository, IEnumerable<ITradeFilePar
             PnL              = pnl,
             TotalCommission  = totalCommission,
             IsClosed         = isClosed,
+            Industry         = trades.FirstOrDefault(t => !string.IsNullOrEmpty(t.Industry))?.Industry,
         };
     }
 
@@ -150,6 +151,20 @@ public class TradeService(ITradeRepository repository, IEnumerable<ITradeFilePar
         await ApplyFifoPnLAsync(tradeList);
 
         await repository.AddRangeAsync(tradeList);
+
+        // Build industry map: use cached DB values first, only call Alpha Vantage for unknowns.
+        var symbols = tradeList.Select(t => t.Symbol).Distinct().ToList();
+        var industries = await repository.GetKnownIndustriesAsync(symbols);
+
+        var unknown = symbols.Where(s => !industries.ContainsKey(s)).ToList();
+        var fetchTasks = unknown.Select(async s => (Symbol: s, Industry: await chartService.GetIndustryAsync(s)));
+        foreach (var (sym, ind) in await Task.WhenAll(fetchTasks))
+            if (ind != null) industries[sym] = ind;
+
+        foreach (var trade in tradeList)
+            if (industries.TryGetValue(trade.Symbol, out var industry))
+                trade.Industry = industry;
+
         await repository.SaveChangesAsync();
 
         return new ImportResultDto(tradeList.Count, $"Successfully imported {tradeList.Count} trade(s).", []);

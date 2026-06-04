@@ -13,4 +13,5 @@ public record PositionDto
     public decimal? PnL { get; init; }
     public decimal TotalCommission { get; init; }
     public bool IsClosed { get; init; }
+    public string? Industry { get; init; }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TradeViewer.Application.Interfaces;
+using TradeViewer.Application.Options;
 using TradeViewer.Application.Services;
 using TradeViewer.Infrastructure.Parsers;
 using TradeViewer.Infrastructure.Persistence;
@@ -17,6 +18,10 @@ builder.Services.AddSwaggerGen(c =>
 // SQLite via EF Core
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=tradeviewer.db"));
+
+// Alpha Vantage options
+builder.Services.AddSingleton(new AlphaVantageOptions(
+    builder.Configuration["AlphaVantage:ApiKey"] ?? string.Empty));
 
 // Clean Architecture registrations
 builder.Services.AddScoped<ITradeRepository, TradeRepository>();

@@ -30,4 +30,5 @@ public class Trade
     public decimal FifoPnlRealized { get; set; }
     public decimal CapitalGainsPnl { get; set; }
     public decimal FxPnl { get; set; }
+    public string? Industry { get; set; }
 }

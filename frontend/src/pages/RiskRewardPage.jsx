@@ -58,7 +58,7 @@ const fmtPct = (n) => `${n >= 0 ? '+' : ''}${Number(n).toFixed(1)}%`
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function RiskRewardPage() {
-  const [inputs, setInputs] = useState({ startCapital: 10000, riskPercent: 1, numberOfTrades: 100 })
+  const [inputs, setInputs] = useState({ startCapital: 10000, riskPercent: 1, numberOfTrades: 100, compounding: true })
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -111,6 +111,16 @@ export default function RiskRewardPage() {
         <Field label="Start Capital" prefix="$" value={inputs.startCapital} onChange={set('startCapital')} min={100} step={1000} />
         <Field label="Risk Per Trade" suffix="%" hint="% of total capital risked per trade" value={inputs.riskPercent} onChange={set('riskPercent')} min={0.1} max={25} step={0.1} />
         <Field label="No. of Trades" value={inputs.numberOfTrades} onChange={set('numberOfTrades')} min={1} max={1000} step={10} />
+        <label className="toggle-label">
+          <input
+            type="checkbox"
+            className="toggle-input"
+            checked={inputs.compounding}
+            onChange={e => setInputs(prev => ({ ...prev, compounding: e.target.checked }))}
+          />
+          <span className="toggle-track" />
+          <span className="toggle-text">Compounding</span>
+        </label>
         <button
           className="btn btn-primary rr-calculate-btn"
           onClick={calculate}

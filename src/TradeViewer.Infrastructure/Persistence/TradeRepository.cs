@@ -46,6 +46,13 @@ public class TradeRepository(AppDbContext context) : ITradeRepository
             .ThenBy(t => t.Action == "BUY" ? 0 : 1)
             .ToListAsync();
 
+    public async Task<Dictionary<string, string>> GetKnownIndustriesAsync(IEnumerable<string> symbols)
+        => await context.Trades
+            .Where(t => symbols.Contains(t.Symbol) && t.Industry != null)
+            .GroupBy(t => t.Symbol)
+            .Select(g => new { g.Key, Industry = g.First(t => t.Industry != null).Industry! })
+            .ToDictionaryAsync(x => x.Key, x => x.Industry);
+
     public async Task DeleteByTransactionIdsAsync(IEnumerable<string> transactionIds)
     {
         var ids = transactionIds.ToList();

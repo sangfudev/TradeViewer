@@ -336,6 +336,7 @@ const cols = [
   { key: 'closeDate',       label: 'Closed' },
   { key: 'symbol',          label: 'Symbol' },
   { key: 'description',     label: 'Description' },
+  { key: 'industry',        label: 'Industry' },
   { key: 'quantity',        label: 'Qty' },
   { key: 'avgEntryPrice',   label: 'Avg Entry' },
   { key: 'avgExitPrice',    label: 'Avg Exit' },
@@ -393,7 +394,7 @@ export default function TradesPage() {
       if (filter === 'open'   &&  p.isClosed) return false
       if (!search) return true
       const q = search.toLowerCase()
-      return p.symbol?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+      return p.symbol?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q) || p.industry?.toLowerCase().includes(q)
     })
     .sort((a, b) => {
       const av = sortKey === 'gainPct' ? gainPct(a) : a[sortKey]
@@ -471,7 +472,7 @@ export default function TradesPage() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Filter by symbol or description…"
+              placeholder="Filter by symbol, description, or industry…"
               className="search-input"
             />
             {search && (
@@ -512,11 +513,11 @@ export default function TradesPage() {
               </thead>
               <tbody>
                 {loading && (
-                  <tr className="trades-table-empty"><td colSpan={11}>Loading…</td></tr>
+                  <tr className="trades-table-empty"><td colSpan={12}>Loading…</td></tr>
                 )}
                 {!loading && filtered.length === 0 && (
                   <tr className="trades-table-empty">
-                    <td colSpan={11}>{positions.length === 0 ? `No positions for ${year}` : 'No matches'}</td>
+                    <td colSpan={12}>{positions.length === 0 ? `No positions for ${year}` : 'No matches'}</td>
                   </tr>
                 )}
                 {!loading && filtered.map((p, i) => (
@@ -529,6 +530,7 @@ export default function TradesPage() {
                         <span className="td-currency-tag">{p.currency}</span>}
                     </td>
                     <td className="td-muted">{p.description || '—'}</td>
+                    <td className="td-muted">{p.industry || '—'}</td>
                     <td className="td-right">{fmt(p.quantity)}</td>
                     <td className="td-right">{p.avgEntryPrice > 0 ? fmt(p.avgEntryPrice) : '—'}</td>
                     <td className="td-right td-muted">{p.avgExitPrice != null ? fmt(p.avgExitPrice) : '—'}</td>
@@ -544,8 +546,8 @@ export default function TradesPage() {
                 ))}
                 {!loading && filtered.length > 0 && (
                   <tr className="totals-row">
-                    <td colSpan={7} className="totals-label">
-                      Totals ({closed.length} closed{positions.length - closed.length > 0 ? `, ${positions.length - closed.length} open` : ''})
+                    <td colSpan={8} className="totals-label">
+                      Totals ({closed.length} closed{filtered.length - closed.length > 0 ? `, ${filtered.length - closed.length} open` : ''})
                     </td>
                     <td className="totals-commission">{totalComm > 0 ? `-$${fmt(totalComm)}` : '—'}</td>
                     <td className="totals-pnl" style={{ color: pnlColor(totalPnL) }}>{fmtPnl(totalPnL)}</td>

@@ -33,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.FifoPnlRealized).HasColumnType("decimal(18,6)");
             entity.Property(e => e.CapitalGainsPnl).HasColumnType("decimal(18,6)");
             entity.Property(e => e.FxPnl).HasColumnType("decimal(18,6)");
+            entity.Property(e => e.Industry).HasMaxLength(100);
         });
     }
 }
