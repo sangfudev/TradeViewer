@@ -8,7 +8,8 @@
       "Bash(dotnet build *)",
       "Bash(dotnet ef *)",
       "Bash(sqlite3 \"d:/TradeViewer/src/TradeViewer.API/tradeviewer.db\" \".tables\")",
-      "Bash(sqlite3 \"d:/TradeViewer/src/TradeViewer.API/tradeviewer.db\" \"SELECT MigrationId FROM __EFMigrationsHistory;\")"
+      "Bash(sqlite3 \"d:/TradeViewer/src/TradeViewer.API/tradeviewer.db\" \"SELECT MigrationId FROM __EFMigrationsHistory;\")",
+      "PowerShell(New-Item *)"
     ]
   }
 }

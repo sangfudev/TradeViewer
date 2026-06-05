@@ -1,0 +1,12 @@
+.pie-chart-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.pie-chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px;
+}

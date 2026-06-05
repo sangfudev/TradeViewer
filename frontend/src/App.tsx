@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-import TradesPage from './pages/TradesPage'
-import ImportPage from './pages/ImportPage'
-import RiskRewardPage from './pages/RiskRewardPage'
+import { TradesPage } from './pages/TradesPage'
+import { ImportPage } from './pages/ImportPage'
+import { RiskRewardPage } from './pages/RiskRewardPage'
 import './App.css'
 
-export default function App() {
+export function App() {
   return (
     <BrowserRouter>
       <div className="app-shell">

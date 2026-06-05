@@ -69,6 +69,16 @@
   font-size: 20px;
 }
 
+/* ── Pie charts ──────────────────────────────────────────────────────────── */
+
+.pie-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+
 /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 
 .trades-toolbar {
