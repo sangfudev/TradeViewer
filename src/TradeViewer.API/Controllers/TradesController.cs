@@ -42,4 +42,11 @@ public class TradesController(TradeService tradeService) : ControllerBase
         var result = await tradeService.ImportFileAsync(stream, file.FileName);
         return result.ImportedCount > 0 ? Ok(result) : BadRequest(result);
     }
+
+    [HttpPost("backfill-industries")]
+    public async Task<IActionResult> BackfillIndustries()
+    {
+        var updated = await tradeService.BackfillIndustriesAsync();
+        return Ok(new { updated });
+    }
 }

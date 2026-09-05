@@ -72,8 +72,11 @@ public class ChartService(HttpClient httpClient)
             if (!response.IsSuccessStatusCode) return null;
 
             var html = await response.Content.ReadAsStringAsync();
+            // stockanalysis.com renders the label/value with a hydration marker between
+            // them, e.g. `Industry</span> <!--[0--><a ...>Aluminum</a>`. The numeric part
+            // of that marker varies, so keep the pattern tolerant.
             var match = System.Text.RegularExpressions.Regex.Match(
-                html, @"Industry</span>\s*<!--\[--><a[^>]*>([^<]+)</a>");
+                html, @"Industry</span>\s*<!--\[\d*-->\s*<a[^>]*>([^<]+)</a>");
             if (!match.Success) return null;
 
             var value = match.Groups[1].Value.Trim();

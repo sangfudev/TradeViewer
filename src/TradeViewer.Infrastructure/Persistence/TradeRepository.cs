@@ -53,6 +53,24 @@ public class TradeRepository(AppDbContext context) : ITradeRepository
             .Select(g => new { g.Key, Industry = g.First(t => t.Industry != null).Industry! })
             .ToDictionaryAsync(x => x.Key, x => x.Industry);
 
+    public async Task<IReadOnlyList<string>> GetSymbolsMissingIndustryAsync()
+    {
+        var symbolsWithIndustry = context.Trades
+            .Where(t => t.Industry != null && t.Industry != "")
+            .Select(t => t.Symbol);
+
+        return await context.Trades
+            .Where(t => !symbolsWithIndustry.Contains(t.Symbol))
+            .Select(t => t.Symbol)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<int> SetIndustryAsync(string symbol, string industry)
+        => await context.Trades
+            .Where(t => t.Symbol == symbol)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.Industry, industry));
+
     public async Task DeleteByTransactionIdsAsync(IEnumerable<string> transactionIds)
     {
         var ids = transactionIds.ToList();

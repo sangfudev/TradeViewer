@@ -3,7 +3,7 @@ import {
   ResponsiveContainer, ComposedChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Customized,
 } from 'recharts'
-import { getYears, getPositionsByYear, getChart } from '../api/client'
+import { getYears, getPositionsByYear, getChart, backfillIndustries } from '../api/client'
 import type { Position, Candle } from '../types'
 import { IndustryPieChart } from '../components/IndustryPieChart'
 import styles from './css/TradesPage.module.css'
@@ -26,6 +26,9 @@ const pnlColor = (v: number | null): string =>
 
 const fmtPnl = (v: number | null): string =>
   v == null ? '—' : `${v > 0 ? '+' : ''}$${fmt(v)}`
+
+const fmtBasePnl = (v: number | null): string =>
+  v == null ? '—' : `${v > 0 ? '+' : ''}SEK ${fmt(v)}`
 
 // ── indicator math ────────────────────────────────────────────────────────────
 
@@ -394,7 +397,7 @@ interface ColDef {
   label: string
 }
 
-const RIGHT_COLS = new Set<ColKey>(['quantity', 'avgEntryPrice', 'avgExitPrice', 'totalCommission', 'pnL', 'gainPct'])
+const RIGHT_COLS = new Set<ColKey>(['quantity', 'avgEntryPrice', 'avgExitPrice', 'totalCommission', 'pnL', 'netBasePnL', 'gainPct'])
 
 const cols: ColDef[] = [
   { key: 'openDate',        label: 'Opened' },
@@ -407,6 +410,7 @@ const cols: ColDef[] = [
   { key: 'avgExitPrice',    label: 'Avg Exit' },
   { key: 'totalCommission', label: 'Commission' },
   { key: 'pnL',             label: 'P&L' },
+  { key: 'netBasePnL',      label: 'Net Base P&L' },
   { key: 'gainPct',         label: 'Gain %' },
 ]
 
@@ -430,6 +434,7 @@ export function TradesPage() {
   const [search,    setSearch]    = useState('')
   const [filter,    setFilter]    = useState<'all' | 'closed' | 'open'>('all')
   const [selected,  setSelected]  = useState<Position | null>(null)
+  const [refreshingIndustries, setRefreshingIndustries] = useState(false)
 
   useEffect(() => {
     getYears().then(ys => {
@@ -454,6 +459,18 @@ export function TradesPage() {
 
   const closeModal = useCallback(() => setSelected(null), [])
 
+  const handleRefreshIndustries = async () => {
+    setRefreshingIndustries(true)
+    try {
+      await backfillIndustries()
+      if (year) setPositions(await getPositionsByYear(year))
+    } catch {
+      // leave the existing data in place on failure
+    } finally {
+      setRefreshingIndustries(false)
+    }
+  }
+
   const filtered = positions
     .filter(p => {
       if (filter === 'closed' && !p.isClosed) return false
@@ -472,7 +489,9 @@ export function TradesPage() {
     })
 
   const closed    = filtered.filter(p => p.isClosed)
+  const unknownIndustryCount = closed.filter(p => !p.industry).length
   const totalPnL  = closed.reduce((s, p) => s + (p.pnL ?? 0), 0)
+  const totalNetBasePnL = closed.reduce((s, p) => s + (p.netBasePnL ?? 0), 0)
   const totalComm = filtered.reduce((s, p) => s + (p.totalCommission ?? 0), 0)
   const winners   = closed.filter(p => p.pnL != null && p.pnL > 0)
   const losers    = closed.filter(p => p.pnL != null && p.pnL < 0)
@@ -522,6 +541,7 @@ export function TradesPage() {
             { label: 'Losers',          value: lossCount,                color: 'var(--red)' },
             { label: 'Win Rate',        value: `${winRate.toFixed(1)}%`, color: winRate >= 50 ? 'var(--green)' : 'var(--yellow)' },
             { label: 'Total P&L',       value: fmtPnl(totalPnL),        color: pnlColor(totalPnL) },
+            { label: 'Total P&L Base',  value: fmtBasePnl(totalNetBasePnL), color: pnlColor(totalNetBasePnL) },
             { label: 'Avg Hold (Win)',  value: avgDays(winners) != null ? `${avgDays(winners)}d` : '—', color: 'var(--green)' },
             { label: 'Avg Hold (Loss)', value: avgDays(losers)  != null ? `${avgDays(losers)}d`  : '—', color: 'var(--red)' },
           ].map(s => (
@@ -530,6 +550,25 @@ export function TradesPage() {
               <p className={styles['stat-value']} style={{ color: s.color }}>{s.value}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {closed.length > 0 && (
+        <div className={styles['pie-charts-header']}>
+          <p className={styles['pie-charts-hint']}>
+            {unknownIndustryCount > 0
+              ? `${unknownIndustryCount} closed position${unknownIndustryCount !== 1 ? 's' : ''} missing an industry`
+              : 'Industry breakdown by closed position'}
+          </p>
+          {unknownIndustryCount > 0 && (
+            <button
+              className="btn btn-secondary"
+              onClick={handleRefreshIndustries}
+              disabled={refreshingIndustries}
+            >
+              {refreshingIndustries ? 'Refreshing…' : 'Refresh industries'}
+            </button>
+          )}
         </div>
       )}
 
@@ -588,11 +627,11 @@ export function TradesPage() {
               </thead>
               <tbody>
                 {loading && (
-                  <tr className={styles['trades-table-empty']}><td colSpan={12}>Loading…</td></tr>
+                  <tr className={styles['trades-table-empty']}><td colSpan={13}>Loading…</td></tr>
                 )}
                 {!loading && filtered.length === 0 && (
                   <tr className={styles['trades-table-empty']}>
-                    <td colSpan={12}>{positions.length === 0 ? `No positions for ${year}` : 'No matches'}</td>
+                    <td colSpan={13}>{positions.length === 0 ? `No positions for ${year}` : 'No matches'}</td>
                   </tr>
                 )}
                 {!loading && filtered.map((p, i) => (
@@ -611,6 +650,7 @@ export function TradesPage() {
                     <td className={`${styles['td-right']} ${styles['td-muted']}`}>{p.avgExitPrice != null ? fmt(p.avgExitPrice) : '—'}</td>
                     <td className={styles['td-commission']}>{p.totalCommission > 0 ? `-$${fmt(p.totalCommission)}` : '—'}</td>
                     <td className={`${styles['td-right']} ${styles['td-bold']}`} style={{ color: pnlColor(p.pnL) }}>{fmtPnl(p.pnL)}</td>
+                    <td className={`${styles['td-right']} ${styles['td-bold']}`} style={{ color: pnlColor(p.netBasePnL) }}>{fmtBasePnl(p.netBasePnL)}</td>
                     <td className={`${styles['td-right']} ${styles['td-bold']}`} style={{ color: pnlColor(gainPct(p)) }}>{fmtPct(gainPct(p))}</td>
                     <td className={styles['td-center']}>
                       <span className={`badge badge--${p.isClosed ? 'closed' : 'open'}`}>
@@ -626,6 +666,7 @@ export function TradesPage() {
                     </td>
                     <td className={styles['totals-commission']}>{totalComm > 0 ? `-$${fmt(totalComm)}` : '—'}</td>
                     <td className={styles['totals-pnl']} style={{ color: pnlColor(totalPnL) }}>{fmtPnl(totalPnL)}</td>
+                    <td className={styles['totals-pnl']} style={{ color: pnlColor(totalNetBasePnL) }}>{fmtBasePnl(totalNetBasePnL)}</td>
                     <td /><td />
                   </tr>
                 )}

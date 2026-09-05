@@ -18,6 +18,9 @@ export const importFile = (file: File): Promise<ImportResult> => {
   return api.post('/trades/import', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data)
 }
 
+export const backfillIndustries = (): Promise<{ updated: number }> =>
+  api.post('/trades/backfill-industries').then(r => r.data)
+
 export const calculateRiskReward = (body: RiskRewardInputs): Promise<RiskRewardResult> =>
   api.post('/riskreward/calculate', body).then(r => r.data)
 

@@ -11,6 +11,7 @@ public record PositionDto
     public decimal AvgEntryPrice { get; init; }
     public decimal? AvgExitPrice { get; init; }
     public decimal? PnL { get; init; }
+    public decimal? NetBasePnL { get; init; }
     public decimal TotalCommission { get; init; }
     public bool IsClosed { get; init; }
     public string? Industry { get; init; }

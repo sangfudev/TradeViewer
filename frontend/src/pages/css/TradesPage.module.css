@@ -78,6 +78,19 @@
   margin-bottom: 24px;
 }
 
+.pie-charts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pie-charts-hint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 
 /* ── Toolbar ─────────────────────────────────────────────────────────────── */
 

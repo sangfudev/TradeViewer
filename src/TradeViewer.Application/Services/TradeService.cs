@@ -100,6 +100,13 @@ public class TradeService(ITradeRepository repository, IEnumerable<ITradeFilePar
 
         var totalCommission = trades.Sum(t => Math.Abs(t.Commission));
 
+        // Net cash impact in the account's base currency: SELL netCashInBase values are
+        // positive (cash in) and BUY values negative (cash out), so their sum is the
+        // realized P&L in base currency including commissions and FX.
+        decimal? netBasePnl = sells.Any()
+            ? buys.Sum(t => t.NetCashInBase) + sells.Sum(t => t.NetCashInBase)
+            : null;
+
         return new PositionDto
         {
             Symbol           = trades.First().Symbol,
@@ -111,6 +118,7 @@ public class TradeService(ITradeRepository repository, IEnumerable<ITradeFilePar
             AvgEntryPrice    = totalBuyQty > 0 ? totalBuyCost / totalBuyQty : 0m,
             AvgExitPrice     = totalSellQty > 0 ? totalSellProceeds / totalSellQty : null,
             PnL              = pnl,
+            NetBasePnL       = netBasePnl,
             TotalCommission  = totalCommission,
             IsClosed         = isClosed,
             Industry         = trades.FirstOrDefault(t => !string.IsNullOrEmpty(t.Industry))?.Industry,
@@ -168,6 +176,35 @@ public class TradeService(ITradeRepository repository, IEnumerable<ITradeFilePar
         await repository.SaveChangesAsync();
 
         return new ImportResultDto(tradeList.Count, $"Successfully imported {tradeList.Count} trade(s).", []);
+    }
+
+    /// <summary>
+    /// Re-fetches the industry for every symbol that currently has none stored and
+    /// writes it back. Used to repair data imported while the industry lookup was
+    /// failing. Returns the number of symbols that were updated.
+    /// </summary>
+    public async Task<int> BackfillIndustriesAsync()
+    {
+        var symbols = await repository.GetSymbolsMissingIndustryAsync();
+
+        // Limit concurrency so the bulk lookup doesn't get rate-limited.
+        using var gate = new SemaphoreSlim(6);
+        var lookups = symbols.Select(async symbol =>
+        {
+            await gate.WaitAsync();
+            try { return (Symbol: symbol, Industry: await chartService.GetIndustryAsync(symbol)); }
+            finally { gate.Release(); }
+        });
+
+        var updated = 0;
+        foreach (var (symbol, industry) in await Task.WhenAll(lookups))
+        {
+            if (string.IsNullOrWhiteSpace(industry)) continue;
+            await repository.SetIndustryAsync(symbol, industry);
+            updated++;
+        }
+
+        return updated;
     }
 
     // ── FIFO P&L ─────────────────────────────────────────────────────────────────

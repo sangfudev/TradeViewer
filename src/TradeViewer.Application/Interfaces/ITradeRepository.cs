@@ -9,6 +9,8 @@ public interface ITradeRepository
     Task<IEnumerable<int>> GetAvailableYearsAsync();
     Task<IEnumerable<Trade>> GetBySymbolsAsync(IEnumerable<string> symbols);
     Task<Dictionary<string, string>> GetKnownIndustriesAsync(IEnumerable<string> symbols);
+    Task<IReadOnlyList<string>> GetSymbolsMissingIndustryAsync();
+    Task<int> SetIndustryAsync(string symbol, string industry);
     Task DeleteByTransactionIdsAsync(IEnumerable<string> transactionIds);
     Task AddRangeAsync(IEnumerable<Trade> trades);
     Task<int> SaveChangesAsync();

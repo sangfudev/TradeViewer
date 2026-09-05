@@ -9,6 +9,7 @@ export interface Position {
   avgExitPrice: number | null
   totalCommission: number
   pnL: number | null
+  netBasePnL: number | null
   currency: string | null
   quantity: number
 }
